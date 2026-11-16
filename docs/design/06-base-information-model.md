@@ -31,3 +31,50 @@ TicketStatus — набор допустимых состояний заявки
 
 Каждое изменение статуса связано с пользователем,
 выполнившим операцию.
+
+## Диаграмма классов
+
+```mermaid
+classDiagram
+    class User {
+        +UUID id
+        +String fullName
+        +String role
+    }
+
+    class Ticket {
+        +UUID id
+        +String title
+        +String description
+        +TicketStatus status
+        +DateTime createdAt
+        +DateTime closedAt
+    }
+
+    class TicketCategory {
+        +UUID id
+        +String name
+        +String description
+    }
+
+    class TicketComment {
+        +UUID id
+        +String text
+        +DateTime createdAt
+    }
+
+    class TicketStatusChange {
+        +UUID id
+        +TicketStatus previousStatus
+        +TicketStatus newStatus
+        +DateTime changedAt
+    }
+
+    class TicketStatus {
+        <<enumeration>>
+        NEW
+        IN_PROGRESS
+        RESOLVED
+        CLOSED
+    }
+```
