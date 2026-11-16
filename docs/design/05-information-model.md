@@ -43,8 +43,11 @@ classDiagram
         +UUID id
         +String title
         +String description
-        +String status
+        -String status
         +DateTime createdAt
+        +assignTo(userId)
+        +close()
+        +getStatus() String
     }
 
     class TicketComment {
