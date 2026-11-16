@@ -51,3 +51,32 @@ flowchart TD
     HelpDesk --> Notifications
     HelpDesk --> DB
 ```
+
+## Микросервисная архитектура
+
+```mermaid
+flowchart TD
+    Browser["Браузер"]
+
+    Gateway["Единая точка входа"]
+
+    Tickets["Сервис заявок"]
+    Users["Сервис пользователей"]
+    Notifications["Сервис уведомлений"]
+
+    TicketDB[("Данные заявок")]
+    UserDB[("Данные пользователей")]
+    NotificationDB[("Данные уведомлений")]
+
+    Browser --> Gateway
+
+    Gateway --> Tickets
+    Gateway --> Users
+
+    Tickets --> Users
+    Tickets --> Notifications
+
+    Tickets --> TicketDB
+    Users --> UserDB
+    Notifications --> NotificationDB
+```
