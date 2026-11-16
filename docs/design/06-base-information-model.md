@@ -77,4 +77,18 @@ classDiagram
         RESOLVED
         CLOSED
     }
+
+    User "1" -- "0..*" Ticket : creates
+    User "0..1" -- "0..*" Ticket : handles
+
+    TicketCategory "1" -- "0..*" Ticket : classifies
+
+    Ticket "1" -- "0..*" TicketComment : contains
+    User "1" -- "0..*" TicketComment : writes
+
+    Ticket "1" -- "0..*" TicketStatusChange : records
+    User "1" -- "0..*" TicketStatusChange : changes
+
+    Ticket ..> TicketStatus : uses
+    TicketStatusChange ..> TicketStatus : uses
 ```
