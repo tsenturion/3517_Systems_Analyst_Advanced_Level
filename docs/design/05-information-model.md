@@ -52,4 +52,9 @@ classDiagram
         +String text
         +DateTime createdAt
     }
+
+    User "1" -- "0..*" Ticket : creates
+    User "0..1" -- "0..*" Ticket : handles
+    Ticket "1" -- "0..*" TicketComment : contains
+    User "1" -- "0..*" TicketComment : writes
 ```
