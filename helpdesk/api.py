@@ -1,5 +1,5 @@
 from dataclasses import asdict
-
+from .messaging import publish_ticket_created
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 
@@ -21,6 +21,7 @@ class NewTicket(BaseModel):
 @app.post("/tickets", status_code=201)
 def create_ticket(data: NewTicket):
     ticket = system.create(**data.model_dump())
+    publish_ticket_created(ticket)
     return asdict(ticket)
 
 
