@@ -26,5 +26,44 @@
         "changed_at": "2026-11-17T10:23:28+00:00"
       }
     ]
+  },
+  {
+    "id": "db2097c3-0e14-42f4-8f5d-5d331d64ac83",
+    "creator_id": "string",
+    "category_id": "string",
+    "title": "string",
+    "description": "string",
+    "status": "NEW",
+    "assignee_id": null,
+    "created_at": "2026-11-17T10:37:50+00:00",
+    "closed_at": null,
+    "comments": [],
+    "changes": []
+  },
+  {
+    "id": "183afb7a-245e-4f89-b9df-855338ab257e",
+    "creator_id": "user-anna",
+    "category_id": "software",
+    "title": "Не работает корпоративная почта",
+    "description": "Ошибка подключения к серверу",
+    "status": "NEW",
+    "assignee_id": null,
+    "created_at": "2026-11-17T10:38:06+00:00",
+    "closed_at": null,
+    "comments": [],
+    "changes": []
+  },
+  {
+    "id": "0575eabe-8b84-46ba-9cb8-31b5eaf922e1",
+    "creator_id": "user-anna",
+    "category_id": "software",
+    "title": "Не работает корпоративная почта",
+    "description": "Ошибка подключения к серверу",
+    "status": "NEW",
+    "assignee_id": null,
+    "created_at": "2026-11-17T10:38:08+00:00",
+    "closed_at": null,
+    "comments": [],
+    "changes": []
   }
 ]
