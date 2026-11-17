@@ -1,2 +1,7 @@
 /материалы_преподавателя/
 /~$*.docx
+
+# Cache
+__pycache__/
+.pytest_cache/
+cache/
