@@ -1,0 +1,74 @@
+---
+references:
+  - "File: /helpdesk/core.py"
+generationTime: 2026-11-17T10:16:52.579Z
+---
+classDiagram
+    class User {
+        +String id
+        +String full_name
+        +String role
+    }
+
+    class TicketCategory {
+        +String id
+        +String name
+    }
+
+    class TicketComment {
+        +String id
+        +String author_id
+        +String text
+        +String created_at
+    }
+
+    class TicketStatusChange {
+        +String id
+        +String user_id
+        +String previous_status
+        +String new_status
+        +String changed_at
+    }
+
+    class TicketStatus {
+        <<enumeration>>
+        NEW
+        IN_PROGRESS
+        RESOLVED
+        CLOSED
+    }
+
+    class Ticket {
+        +String id
+        +String creator_id
+        +String category_id
+        +String title
+        +String description
+        +TicketStatus status
+        +Optional~String~ assignee_id
+        +String created_at
+        +Optional~String~ closed_at
+        +List~TicketComment~ comments
+        +List~TicketStatusChange~ changes
+        +assign_to(String user_id) void
+        +add_comment(String author_id, String text) void
+        +change_status(TicketStatus new_status, String user_id) void
+        +from_dict(dict data) Ticket
+    }
+
+    class HelpDesk {
+        +Path path
+        +Dict~String, Ticket~ tickets
+        +save() void
+        +create(String title, String description, String creator_id, String category_id) Ticket
+        +get(String ticket_id) Ticket
+    }
+
+    HelpDesk "1" o-- "*" Ticket : manages
+    Ticket "1" *-- "*" TicketComment : contains
+    Ticket "1" *-- "*" TicketStatusChange : records
+    Ticket --> TicketStatus : has status
+    Ticket --> User : creator and assignee
+    Ticket --> TicketCategory : belongs to
+    TicketComment --> User : authored by
+    TicketStatusChange --> User : changed by
