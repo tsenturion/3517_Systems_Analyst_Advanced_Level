@@ -78,5 +78,33 @@
     "closed_at": null,
     "comments": [],
     "changes": []
+  },
+  {
+    "id": "578c5a6c-930a-4979-b9bc-909f1ce7e270",
+    "creator_id": "user-anna",
+    "category_id": "hardware",
+    "title": "Не включается ноутбук",
+    "description": "Экран остаётся чёрным",
+    "status": "IN_PROGRESS",
+    "assignee_id": "user-oleg",
+    "created_at": "2026-11-17T11:45:17+00:00",
+    "closed_at": null,
+    "comments": [
+      {
+        "id": "0db41740-eabb-46a3-a367-2fa08b9d11aa",
+        "author_id": "user-oleg",
+        "text": "Проверяю питание",
+        "created_at": "2026-11-17T11:45:17+00:00"
+      }
+    ],
+    "changes": [
+      {
+        "id": "b6e25cc5-a8af-4047-adc3-7fb29b0dc3f9",
+        "user_id": "user-oleg",
+        "previous_status": "NEW",
+        "new_status": "IN_PROGRESS",
+        "changed_at": "2026-11-17T11:45:17+00:00"
+      }
+    ]
   }
 ]
