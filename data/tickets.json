@@ -106,5 +106,18 @@
         "changed_at": "2026-11-17T11:45:17+00:00"
       }
     ]
+  },
+  {
+    "id": "7d37c3f9-1aac-48fd-ba19-46d6d1e878db",
+    "creator_id": "user-anna",
+    "category_id": "hardware",
+    "title": "Не работает принтер",
+    "description": "Принтер не принимает задания печати",
+    "status": "NEW",
+    "assignee_id": null,
+    "created_at": "2026-11-17T11:58:28+00:00",
+    "closed_at": null,
+    "comments": [],
+    "changes": []
   }
 ]
