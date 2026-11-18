@@ -20,6 +20,8 @@ if row is None:
 
 event = json.loads(row[0])
 
+# Демонстрация дублирования: одно и то же событие публикуется дважды.
+# Повторная отправка создаёт второй handler_event с тем же event_id.
 publish_event(event)
 publish_event(event)
 
