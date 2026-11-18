@@ -4,21 +4,13 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 
 from .application import TicketService
-from .adapters import (
-    JsonTicketRepository,
-    RabbitEventPublisher
-)
+from .outbox_repository import SqliteTicketRepository
 
 
 app = FastAPI(title="HelpDesk")
 
-repository = JsonTicketRepository()
-publisher = RabbitEventPublisher()
-
-service = TicketService(
-    repository=repository,
-    publisher=publisher
-)
+repository = SqliteTicketRepository()
+service = TicketService(repository)
 
 
 class NewTicket(BaseModel):
@@ -33,16 +25,13 @@ def create_ticket(data: NewTicket):
     ticket = service.create_ticket(
         **data.model_dump()
     )
-
     return asdict(ticket)
 
 
 @app.get("/tickets/{ticket_id}")
 def get_ticket(ticket_id: str):
     try:
-        ticket = service.get_ticket(ticket_id)
-        return asdict(ticket)
-
+        return asdict(service.get_ticket(ticket_id))
     except KeyError:
         raise HTTPException(
             status_code=404,
