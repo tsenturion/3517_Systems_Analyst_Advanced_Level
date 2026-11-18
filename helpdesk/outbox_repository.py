@@ -162,3 +162,40 @@ class SqliteTicketRepository:
                 """,
                 (now(), event_id)
             )
+            
+    def update_status(
+        self,
+        ticket_id: str,
+        new_status: str,
+        user_id: str
+    ) -> Ticket:
+        with self._connect() as db:
+            row = db.execute(
+                "SELECT payload FROM tickets WHERE id = ?",
+                (ticket_id,)
+            ).fetchone()
+
+            if row is None:
+                raise KeyError(ticket_id)
+
+            ticket = Ticket.from_dict(json.loads(row[0]))
+
+            if ticket.status.value != new_status:
+                ticket.change_status(new_status, user_id)
+
+                db.execute(
+                    """
+                    UPDATE tickets
+                    SET payload = ?
+                    WHERE id = ?
+                    """,
+                    (
+                        json.dumps(
+                            asdict(ticket),
+                            ensure_ascii=False
+                        ),
+                        ticket_id
+                    )
+                )
+
+        return ticket

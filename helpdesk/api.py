@@ -1,3 +1,4 @@
+from .domain import TicketStatus
 from dataclasses import asdict
 
 from fastapi import FastAPI, HTTPException
@@ -32,6 +33,32 @@ def create_ticket(data: NewTicket):
 def get_ticket(ticket_id: str):
     try:
         return asdict(service.get_ticket(ticket_id))
+    except KeyError:
+        raise HTTPException(
+            status_code=404,
+            detail="Заявка не найдена"
+        )
+
+
+class TicketStatusPatch(BaseModel):
+    status: TicketStatus
+    user_id: str = Field(min_length=1)
+
+
+@app.patch("/tickets/{ticket_id}")
+def patch_ticket(
+    ticket_id: str,
+    data: TicketStatusPatch
+):
+    try:
+        ticket = service.change_status(
+            ticket_id=ticket_id,
+            new_status=data.status.value,
+            user_id=data.user_id
+        )
+
+        return asdict(ticket)
+
     except KeyError:
         raise HTTPException(
             status_code=404,

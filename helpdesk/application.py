@@ -15,6 +15,14 @@ class TicketRepository(Protocol):
 
     def get(self, ticket_id: str) -> Ticket:
         ...
+        
+    def update_status(
+        self,
+        ticket_id: str,
+        new_status: str,
+        user_id: str
+    ) -> Ticket:
+        ...
 
 
 class TicketService:
@@ -37,3 +45,15 @@ class TicketService:
 
     def get_ticket(self, ticket_id: str) -> Ticket:
         return self.repository.get(ticket_id)
+    
+    def change_status(
+        self,
+        ticket_id: str,
+        new_status: str,
+        user_id: str
+    ) -> Ticket:
+        return self.repository.update_status(
+            ticket_id,
+            new_status,
+            user_id
+        )
