@@ -26,6 +26,8 @@ class SqliteTicketRepository:
                 )
             """)
 
+            # Outbox хранится рядом с заявками, чтобы обе записи можно было
+            # атомарно фиксировать в одной SQLite-транзакции.
             db.execute("""
                 CREATE TABLE IF NOT EXISTS outbox (
                     event_id TEXT PRIMARY KEY,
@@ -60,6 +62,7 @@ class SqliteTicketRepository:
 
         try:
             yield db
+            # Успешный выход фиксирует все операции; исключение ниже откатывает их.
             db.commit()
         except Exception:
             db.rollback()
@@ -94,6 +97,8 @@ class SqliteTicketRepository:
         }
 
         with self._connect() as db:
+            # Заявка и событие создаются одной транзакцией: либо сохраняются
+            # обе записи, либо ни одна из них.
             db.execute(
                 "INSERT INTO tickets VALUES (?, ?)",
                 (
@@ -132,6 +137,8 @@ class SqliteTicketRepository:
         return Ticket.from_dict(json.loads(row[0]))
 
     def pending_events(self):
+        # Отправитель событий может повторить выборку после сбоя процесса:
+        # неопубликованные записи остаются в outbox до подтверждения публикации.
         with self._connect() as db:
             rows = db.execute("""
                 SELECT payload
@@ -143,6 +150,8 @@ class SqliteTicketRepository:
         return [json.loads(row[0]) for row in rows]
 
     def mark_published(self, event_id: str):
+        # Вызывать после подтверждения брокера. Если процесс завершится после
+        # публикации, но до этой отметки, событие может быть отправлено повторно.
         with self._connect() as db:
             db.execute(
                 """
