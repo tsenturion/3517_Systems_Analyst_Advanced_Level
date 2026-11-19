@@ -1,13 +1,13 @@
 """HTTP API HelpDesk.
 
 Предоставляет маршруты для создания заявок, получения заявки по идентификатору
-и изменения её статуса.
+и изменения её статуса, а также для получения списка заявок с фильтрацией.
 """
 
 from .domain import TicketStatus
 from dataclasses import asdict
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Query
 from pydantic import BaseModel, Field
 
 from .application import TicketService
@@ -89,3 +89,20 @@ def patch_ticket(
             status_code=404,
             detail="Заявка не найдена"
         )
+        
+@app.get("/tickets")
+def list_tickets(
+    status: TicketStatus | None = None,
+    limit: int = Query(default=20, ge=1, le=100),
+    offset: int = Query(default=0, ge=0)
+):
+    """Возвращает список заявок с пагинацией.
+
+    Может фильтровать заявки по статусу. Параметр ``limit`` задаёт размер
+    страницы от 1 до 100, а ``offset`` задаёт количество пропущенных заявок.
+    """
+    return service.list_tickets(
+        status=status.value if status else None,
+        limit=limit,
+        offset=offset
+    )

@@ -24,6 +24,14 @@ class TicketRepository(Protocol):
     ) -> Ticket:
         ...
 
+    def list_tickets(
+        self,
+        status: str | None = None,
+        limit: int = 20,
+        offset: int = 0
+    ) -> dict:
+        ...
+        
 
 class TicketService:
     def __init__(self, repository: TicketRepository):
@@ -56,4 +64,16 @@ class TicketService:
             ticket_id,
             new_status,
             user_id
+        )
+        
+    def list_tickets(
+        self,
+        status: str | None = None,
+        limit: int = 20,
+        offset: int = 0
+    ) -> dict:
+        return self.repository.list_tickets(
+            status=status,
+            limit=limit,
+            offset=offset
         )
