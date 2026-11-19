@@ -199,3 +199,39 @@ class SqliteTicketRepository:
                 )
 
         return ticket
+    
+    def list_tickets(
+        self,
+        status: str | None = None,
+        limit: int = 20,
+        offset: int = 0
+    ) -> dict:
+        with self._connect() as db:
+            rows = db.execute(
+                """
+                SELECT payload
+                FROM tickets
+                ORDER BY rowid DESC
+                """
+            ).fetchall()
+
+        tickets = [
+            Ticket.from_dict(json.loads(row[0]))
+            for row in rows
+        ]
+
+        if status is not None:
+            tickets = [
+                ticket for ticket in tickets
+                if ticket.status.value == status
+            ]
+
+        total = len(tickets)
+        page = tickets[offset:offset + limit]
+
+        return {
+            "items": [asdict(ticket) for ticket in page],
+            "total": total,
+            "limit": limit,
+            "offset": offset
+    }
