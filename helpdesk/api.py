@@ -1,40 +1,84 @@
-"""HTTP API HelpDesk.
+"""HTTP API системы HelpDesk.
 
-Предоставляет маршруты для создания заявок, получения заявки по идентификатору
-и изменения её статуса, а также для получения списка заявок с фильтрацией.
+Маршруты модуля позволяют получать и создавать заявки, а также изменять
+их статус.
 """
 
-from .domain import TicketStatus
 from dataclasses import asdict
 
-from fastapi import FastAPI, HTTPException, Query
-from pydantic import BaseModel, Field
+from fastapi import FastAPI, HTTPException, Path, Query
 
 from .application import TicketService
+from .domain import TicketStatus
 from .outbox_repository import SqliteTicketRepository
+from .schemas import (
+    ApiError,
+    TicketCreate,
+    TicketPage,
+    TicketRead,
+    TicketStatusPatch
+)
 
 
-app = FastAPI(title="HelpDesk")
+app = FastAPI(
+    title="HelpDesk API",
+    version="1.0.0",
+    description="API системы технической поддержки"
+)
 
 repository = SqliteTicketRepository()
 service = TicketService(repository)
 
 
-class NewTicket(BaseModel):
-    """Данные для создания новой заявки."""
+@app.get(
+    "/tickets",
+    response_model=TicketPage,
+    tags=["Tickets"],
+    summary="Получение списка заявок",
+    operation_id="listTickets"
+)
+def list_tickets(
+    status: TicketStatus | None = Query(
+        default=None,
+        description="Фильтр по статусу заявки"
+    ),
+    limit: int = Query(
+        default=20,
+        ge=1,
+        le=100,
+        description="Размер страницы"
+    ),
+    offset: int = Query(
+        default=0,
+        ge=0,
+        description="Смещение от начала списка"
+    )
+):
+    """Возвращает постраничный список заявок.
 
-    title: str = Field(min_length=1)
-    description: str
-    creator_id: str
-    category_id: str
+    При указании статуса возвращаются только заявки с выбранным статусом.
+    Параметры limit и offset задают размер страницы и смещение.
+    """
+    return service.list_tickets(
+        status=status.value if status else None,
+        limit=limit,
+        offset=offset
+    )
 
 
-@app.post("/tickets", status_code=201)
-def create_ticket(data: NewTicket):
+@app.post(
+    "/tickets",
+    response_model=TicketRead,
+    status_code=201,
+    tags=["Tickets"],
+    summary="Создание заявки",
+    operation_id="createTicket"
+)
+def create_ticket(data: TicketCreate):
     """Создаёт новую заявку.
 
-    Принимает название, описание, идентификатор автора и категории.
-    Возвращает созданную заявку в виде словаря со статусом HTTP 201.
+    Принимает заголовок, описание, автора и категорию обращения.
+    Возвращает созданную заявку со статусом HTTP 201.
     """
     ticket = service.create_ticket(
         **data.model_dump()
@@ -42,11 +86,27 @@ def create_ticket(data: NewTicket):
     return asdict(ticket)
 
 
-@app.get("/tickets/{ticket_id}")
-def get_ticket(ticket_id: str):
+@app.get(
+    "/tickets/{ticket_id}",
+    response_model=TicketRead,
+    tags=["Tickets"],
+    summary="Получение заявки по идентификатору",
+    operation_id="getTicketById",
+    responses={
+        404: {
+            "model": ApiError,
+            "description": "Заявка не найдена"
+        }
+    }
+)
+def get_ticket(
+    ticket_id: str = Path(
+        description="Уникальный идентификатор заявки"
+    )
+):
     """Возвращает заявку по идентификатору.
 
-    Вызывает исключение HTTP 404, если заявка не найдена.
+    Возвращает HTTP 404, если заявка с указанным идентификатором не найдена.
     """
     try:
         return asdict(service.get_ticket(ticket_id))
@@ -57,23 +117,29 @@ def get_ticket(ticket_id: str):
         )
 
 
-class TicketStatusPatch(BaseModel):
-    """Новые данные статуса заявки."""
-
-    status: TicketStatus
-    user_id: str = Field(min_length=1)
-
-
-@app.patch("/tickets/{ticket_id}")
+@app.patch(
+    "/tickets/{ticket_id}",
+    response_model=TicketRead,
+    tags=["Tickets"],
+    summary="Изменение статуса заявки",
+    operation_id="updateTicketStatus",
+    responses={
+        404: {
+            "model": ApiError,
+            "description": "Заявка не найдена"
+        }
+    }
+)
 def patch_ticket(
-    ticket_id: str,
-    data: TicketStatusPatch
+    data: TicketStatusPatch,
+    ticket_id: str = Path(
+        description="Уникальный идентификатор заявки"
+    )
 ):
     """Изменяет статус заявки.
 
-    Принимает новый статус и идентификатор пользователя, который выполняет
-    изменение. Возвращает обновлённую заявку или HTTP 404 для неизвестного
-    идентификатора заявки.
+    Принимает данные нового статуса и идентификатор пользователя,
+    выполняющего изменение. Возвращает HTTP 404 для неизвестной заявки.
     """
     try:
         ticket = service.change_status(
@@ -81,28 +147,9 @@ def patch_ticket(
             new_status=data.status.value,
             user_id=data.user_id
         )
-
         return asdict(ticket)
-
     except KeyError:
         raise HTTPException(
             status_code=404,
             detail="Заявка не найдена"
         )
-        
-@app.get("/tickets")
-def list_tickets(
-    status: TicketStatus | None = None,
-    limit: int = Query(default=20, ge=1, le=100),
-    offset: int = Query(default=0, ge=0)
-):
-    """Возвращает список заявок с пагинацией.
-
-    Может фильтровать заявки по статусу. Параметр ``limit`` задаёт размер
-    страницы от 1 до 100, а ``offset`` задаёт количество пропущенных заявок.
-    """
-    return service.list_tickets(
-        status=status.value if status else None,
-        limit=limit,
-        offset=offset
-    )
