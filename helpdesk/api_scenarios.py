@@ -1,8 +1,10 @@
+import os
 import json
 
 from urllib.error import HTTPError
 from urllib.request import Request, urlopen
 
+os.environ["NO_PROXY"] = "localhost,127.0.0.1,::1"
 
 BASE_URL = "http://127.0.0.1:8000"
 
@@ -28,7 +30,21 @@ def request_api(method, path, payload=None):
             return response.status, json.load(response)
 
     except HTTPError as error:
-        return error.code, json.load(error)
+        response_body = error.read().decode(
+            "utf-8",
+            errors="replace"
+        )
+
+        print("HTTP-ошибка:", error.code)
+        print("Адрес:", BASE_URL + path)
+        print("Ответ сервера:", response_body)
+
+        try:
+            return error.code, json.loads(response_body)
+        except json.JSONDecodeError:
+            return error.code, {
+                "detail": response_body or "Пустой ответ сервера"
+            }
 
 
 # Создание заявки
