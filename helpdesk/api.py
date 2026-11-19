@@ -1,3 +1,9 @@
+"""HTTP API HelpDesk.
+
+Предоставляет маршруты для создания заявок, получения заявки по идентификатору
+и изменения её статуса.
+"""
+
 from .domain import TicketStatus
 from dataclasses import asdict
 
@@ -15,6 +21,8 @@ service = TicketService(repository)
 
 
 class NewTicket(BaseModel):
+    """Данные для создания новой заявки."""
+
     title: str = Field(min_length=1)
     description: str
     creator_id: str
@@ -23,6 +31,11 @@ class NewTicket(BaseModel):
 
 @app.post("/tickets", status_code=201)
 def create_ticket(data: NewTicket):
+    """Создаёт новую заявку.
+
+    Принимает название, описание, идентификатор автора и категории.
+    Возвращает созданную заявку в виде словаря со статусом HTTP 201.
+    """
     ticket = service.create_ticket(
         **data.model_dump()
     )
@@ -31,6 +44,10 @@ def create_ticket(data: NewTicket):
 
 @app.get("/tickets/{ticket_id}")
 def get_ticket(ticket_id: str):
+    """Возвращает заявку по идентификатору.
+
+    Вызывает исключение HTTP 404, если заявка не найдена.
+    """
     try:
         return asdict(service.get_ticket(ticket_id))
     except KeyError:
@@ -41,6 +58,8 @@ def get_ticket(ticket_id: str):
 
 
 class TicketStatusPatch(BaseModel):
+    """Новые данные статуса заявки."""
+
     status: TicketStatus
     user_id: str = Field(min_length=1)
 
@@ -50,6 +69,12 @@ def patch_ticket(
     ticket_id: str,
     data: TicketStatusPatch
 ):
+    """Изменяет статус заявки.
+
+    Принимает новый статус и идентификатор пользователя, который выполняет
+    изменение. Возвращает обновлённую заявку или HTTP 404 для неизвестного
+    идентификатора заявки.
+    """
     try:
         ticket = service.change_status(
             ticket_id=ticket_id,
