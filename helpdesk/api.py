@@ -5,7 +5,7 @@
 """
 
 from dataclasses import asdict
-
+from prometheus_fastapi_instrumentator import Instrumentator
 from fastapi import FastAPI, HTTPException, Path, Query
 
 from .application import TicketService
@@ -153,3 +153,40 @@ def patch_ticket(
             status_code=404,
             detail="Заявка не найдена"
         )
+        
+import logging
+import time
+
+from fastapi import Request
+
+logger = logging.getLogger("uvicorn.error")
+
+
+@app.middleware("http")
+async def monitor_requests(request: Request, call_next):
+    start = time.perf_counter()
+    status = 500
+
+    try:
+        response = await call_next(request)
+        status = response.status_code
+        return response
+    finally:
+        duration = (time.perf_counter() - start) * 1000
+
+        route = request.scope.get("route")
+        path = route.path if route else "unknown"
+
+        logger.info(
+            "method=%s path=%s status=%s duration_ms=%.2f",
+            request.method,
+            path,
+            status,
+            duration
+        )
+        
+        
+Instrumentator().instrument(app).expose(
+    app,
+    include_in_schema=False
+)
