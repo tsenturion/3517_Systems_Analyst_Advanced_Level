@@ -1,0 +1,109 @@
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>HelpDesk</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f9;
+            margin: 0;
+            padding: 30px;
+        }
+
+        main {
+            max-width: 850px;
+            margin: auto;
+        }
+
+        section, article {
+            background: white;
+            padding: 20px;
+            margin-bottom: 16px;
+            border-radius: 10px;
+        }
+
+        input, textarea, select, button {
+            padding: 10px;
+            margin: 6px 0;
+            box-sizing: border-box;
+        }
+
+        form input, form textarea {
+            display: block;
+            width: 100%;
+        }
+
+        button {
+            cursor: pointer;
+        }
+
+        article {
+            border: 1px solid #ddd;
+        }
+
+        #message {
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <h1>HelpDesk — техническая поддержка</h1>
+
+        <section>
+            <h2>Создание заявки</h2>
+
+            <form id="ticket-form">
+                <input name="title"
+                       placeholder="Заголовок"
+                       required>
+
+                <textarea name="description"
+                          placeholder="Описание проблемы"
+                          required></textarea>
+
+                <input name="creator_id"
+                       value="user-anna"
+                       required>
+
+                <select name="category_id">
+                    <option value="hardware">Оборудование</option>
+                    <option value="software">Программы</option>
+                    <option value="network">Сеть</option>
+                </select>
+
+                <button type="submit">Создать заявку</button>
+            </form>
+        </section>
+
+        <section>
+            <h2>Заявки</h2>
+
+            <label for="operator">Пользователь, изменяющий статус:</label>
+            <input id="operator" value="user-oleg">
+
+            <label for="filter">Фильтр:</label>
+            <select id="filter">
+                <option value="">Все</option>
+                <option value="NEW">NEW</option>
+                <option value="IN_PROGRESS">IN_PROGRESS</option>
+                <option value="RESOLVED">RESOLVED</option>
+                <option value="CLOSED">CLOSED</option>
+            </select>
+
+            <button id="refresh" type="button">
+                Обновить список
+            </button>
+
+            <div id="tickets"></div>
+        </section>
+
+        <p id="message" role="status" aria-live="polite"></p>
+    </main>
+
+    <script src="app.js" defer></script>
+</body>
+</html>
