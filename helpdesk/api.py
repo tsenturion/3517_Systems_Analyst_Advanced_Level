@@ -7,7 +7,7 @@
 from dataclasses import asdict
 from prometheus_fastapi_instrumentator import Instrumentator
 from fastapi import FastAPI, HTTPException, Path, Query
-
+from fastapi.middleware.cors import CORSMiddleware
 from .application import TicketService
 from .domain import TicketStatus
 from .outbox_repository import SqliteTicketRepository
@@ -25,7 +25,15 @@ app = FastAPI(
     version="1.0.0",
     description="API системы технической поддержки"
 )
-
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://127.0.0.1:5500"
+    ],
+    allow_credentials=False,
+    allow_methods=["GET", "POST", "PATCH"],
+    allow_headers=["Content-Type"]
+)
 repository = SqliteTicketRepository()
 service = TicketService(repository)
 
