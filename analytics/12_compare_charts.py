@@ -66,3 +66,37 @@ plt.savefig(
 )
 
 plt.close()
+
+runs = pd.read_csv(
+    root / "data" / "load_run_statistics.csv"
+)
+
+plt.figure(figsize=(10, 5))
+
+for mode in ["baseline", "parallel"]:
+
+    group = runs[runs["mode"] == mode]
+    group = group.sort_values("round")
+
+    plt.plot(
+        group["round"],
+        group["throughput"],
+        marker="o",
+        label=mode
+    )
+
+plt.title("Пропускная способность по раундам")
+plt.xlabel("Номер раунда")
+plt.ylabel("Успешных запросов в секунду")
+plt.xticks([1, 2, 3])
+
+plt.grid(True)
+plt.legend()
+plt.tight_layout()
+
+plt.savefig(
+    output / "throughput_comparison.png",
+    dpi=150
+)
+
+plt.close()
