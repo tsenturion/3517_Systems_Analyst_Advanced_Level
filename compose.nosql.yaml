@@ -1,0 +1,33 @@
+services:
+  redis:
+    image: redis:7.4
+    container_name: helpdesk-redis
+
+    command:
+      - redis-server
+      - --requirepass
+      - helpdesk_dev_only
+      - --maxmemory
+      - 64mb
+      - --maxmemory-policy
+      - allkeys-lru
+
+    ports:
+      - "127.0.0.1:56379:6379"
+
+  mongo:
+    image: mongo:8.0
+    container_name: helpdesk-mongo
+
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: helpdesk
+      MONGO_INITDB_ROOT_PASSWORD: helpdesk_dev_only
+
+    ports:
+      - "127.0.0.1:57017:27017"
+
+    volumes:
+      - helpdesk-mongo-data:/data/db
+
+volumes:
+  helpdesk-mongo-data:
