@@ -26,6 +26,13 @@ class SqliteTicketRepository:
                 )
             """)
 
+            db.execute("""
+                CREATE INDEX IF NOT EXISTS idx_tickets_json_status
+                ON tickets (
+                    json_extract(payload, '$.status')
+                )
+            """)
+
             # Outbox хранится рядом с заявками, чтобы обе записи можно было
             # атомарно фиксировать в одной SQLite-транзакции.
             db.execute("""
@@ -206,32 +213,49 @@ class SqliteTicketRepository:
         limit: int = 20,
         offset: int = 0
     ) -> dict:
+
         with self._connect() as db:
-            rows = db.execute(
-                """
-                SELECT payload
-                FROM tickets
-                ORDER BY rowid DESC
-                """
-            ).fetchall()
+
+            db.execute("BEGIN")
+
+            if status is None:
+
+                total = db.execute("""
+                    SELECT COUNT(*)
+                    FROM tickets
+                """).fetchone()[0]
+
+                rows = db.execute("""
+                    SELECT payload
+                    FROM tickets
+                    ORDER BY rowid DESC
+                    LIMIT ? OFFSET ?
+                """, (limit, offset)).fetchall()
+
+            else:
+
+                total = db.execute("""
+                    SELECT COUNT(*)
+                    FROM tickets
+                    WHERE json_extract(payload, '$.status') = ?
+                """, (status,)).fetchone()[0]
+
+                rows = db.execute("""
+                    SELECT payload
+                    FROM tickets
+                    WHERE json_extract(payload, '$.status') = ?
+                    ORDER BY rowid DESC
+                    LIMIT ? OFFSET ?
+                """, (status, limit, offset)).fetchall()
 
         tickets = [
             Ticket.from_dict(json.loads(row[0]))
             for row in rows
         ]
 
-        if status is not None:
-            tickets = [
-                ticket for ticket in tickets
-                if ticket.status.value == status
-            ]
-
-        total = len(tickets)
-        page = tickets[offset:offset + limit]
-
         return {
-            "items": [asdict(ticket) for ticket in page],
+            "items": [asdict(ticket) for ticket in tickets],
             "total": total,
             "limit": limit,
             "offset": offset
-    }
+        }

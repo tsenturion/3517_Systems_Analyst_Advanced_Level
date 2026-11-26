@@ -1,0 +1,5 @@
+scenario,measurements,returned_rows,average_ms,median_ms,minimum_ms,maximum_ms
+without_index,20,20,13.57,13.113,10.777,19.327
+with_index,20,20,0.268,0.257,0.191,0.431
+offset,20,20,9.149,8.813,7.713,11.5
+keyset,20,20,0.276,0.271,0.176,0.387
