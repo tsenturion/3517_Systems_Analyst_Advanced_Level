@@ -3,7 +3,7 @@
   "info": {
     "title": "HelpDesk API",
     "description": "API системы технической поддержки",
-    "version": "1.0.0"
+    "version": "1.1.0"
   },
   "paths": {
     "/tickets": {

@@ -23,7 +23,7 @@ from .schemas import (
 
 app = FastAPI(
     title="HelpDesk API",
-    version="1.0.0",
+    version="1.1.0",
     description="API системы технической поддержки"
 )
 app.add_middleware(
