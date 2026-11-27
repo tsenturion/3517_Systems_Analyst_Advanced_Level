@@ -47,6 +47,19 @@
         #message {
             font-weight: bold;
         }
+
+        #pagination {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        button:disabled {
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
     </style>
 </head>
 <body>
@@ -99,6 +112,17 @@
             </button>
 
             <div id="tickets"></div>
+            <div id="pagination">
+                <button id="previous-page" type="button" disabled>
+                    Предыдущая страница
+                </button>
+
+                <span id="page-info">Страница 1</span>
+
+                <button id="next-page" type="button" disabled>
+                    Следующая страница
+                </button>
+            </div>
         </section>
 
         <p id="message" role="status" aria-live="polite"></p>
