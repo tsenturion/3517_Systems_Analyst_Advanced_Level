@@ -34,9 +34,6 @@ data/
 *.p12
 *.pfx
 
-# Сгенерированные графики
-docs/analytics/charts/
-
 # Журналы
 *.log
 logs/
@@ -49,3 +46,11 @@ dist/
 # Системные файлы
 .DS_Store
 Thumbs.db
+
+.git/
+.github/
+docs/
+analytics/
+database/
+monitoring/
+tests/

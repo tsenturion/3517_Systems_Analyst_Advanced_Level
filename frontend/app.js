@@ -1,5 +1,7 @@
-const API = "http://127.0.0.1:8000";
-
+const API = window.location.pathname.startsWith("/ui/")
+    ? window.location.origin
+    : "http://127.0.0.1:8000";
+    
 const ticketsContainer = document.querySelector("#tickets");
 const message = document.querySelector("#message");
 const filter = document.querySelector("#filter");
