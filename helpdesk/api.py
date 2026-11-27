@@ -3,7 +3,8 @@
 Маршруты модуля позволяют получать и создавать заявки, а также изменять
 их статус.
 """
-
+from pathlib import Path as FilePath
+from fastapi.staticfiles import StaticFiles
 from dataclasses import asdict
 from prometheus_fastapi_instrumentator import Instrumentator
 from fastapi import FastAPI, HTTPException, Path, Query
@@ -22,13 +23,14 @@ from .schemas import (
 
 app = FastAPI(
     title="HelpDesk API",
-    version="1.0.0",
+    version="1.1.0",
     description="API системы технической поддержки"
 )
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "http://127.0.0.1:5500"
+        "http://127.0.0.1:5500",
+        "http://localhost:5500"
     ],
     allow_credentials=False,
     allow_methods=["GET", "POST", "PATCH"],
@@ -197,4 +199,18 @@ async def monitor_requests(request: Request, call_next):
 Instrumentator().instrument(app).expose(
     app,
     include_in_schema=False
+)
+
+frontend_directory = (
+    FilePath(__file__).resolve().parents[1]
+    / "frontend"
+)
+
+app.mount(
+    "/ui",
+    StaticFiles(
+        directory=str(frontend_directory),
+        html=True
+    ),
+    name="frontend"
 )

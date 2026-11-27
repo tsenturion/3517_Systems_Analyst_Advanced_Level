@@ -34,9 +34,6 @@ data/
 *.p12
 *.pfx
 
-# Сгенерированные графики
-docs/analytics/charts/
-
 # Журналы
 *.log
 logs/

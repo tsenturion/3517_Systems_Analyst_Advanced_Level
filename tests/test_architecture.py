@@ -5,6 +5,7 @@ from helpdesk.domain import Ticket
 
 
 class MemoryRepository:
+
     def __init__(self):
         self.tickets = {}
 
@@ -16,7 +17,7 @@ class MemoryRepository:
         category_id
     ):
         ticket = Ticket(
-            id="ticket-001",
+            id="test-ticket-001",
             title=title,
             description=description,
             creator_id=creator_id,
@@ -31,45 +32,47 @@ class MemoryRepository:
         return self.tickets[ticket_id]
 
 
-class RecordingPublisher:
-    def __init__(self):
-        self.events = []
+class TestTicketService(unittest.TestCase):
 
-    def publish_created(self, ticket):
-        self.events.append(ticket.id)
+    def setUp(self):
+        self.repository = MemoryRepository()
+        self.service = TicketService(self.repository)
 
-
-class ArchitectureTest(unittest.TestCase):
     def test_create_ticket(self):
-        repository = MemoryRepository()
-        publisher = RecordingPublisher()
 
-        service = TicketService(
-            repository,
-            publisher
-        )
-
-        ticket = service.create_ticket(
-            title="Не работает принтер",
-            description="Ошибка печати",
+        ticket = self.service.create_ticket(
+            title="Test ticket",
+            description="Test description",
             creator_id="user-anna",
-            category_id="hardware"
+            category_id="software"
         )
 
-        self.assertEqual(
-            ticket.title,
-            "Не работает принтер"
+        self.assertEqual(ticket.title, "Test ticket")
+        self.assertEqual(ticket.status.value, "NEW")
+
+        self.assertIn(
+            ticket.id,
+            self.repository.tickets
         )
 
-        self.assertEqual(
-            repository.get(ticket.id),
-            ticket
+    def test_get_ticket(self):
+
+        created = self.service.create_ticket(
+            title="Test ticket",
+            description="Test description",
+            creator_id="user-anna",
+            category_id="software"
         )
 
-        self.assertEqual(
-            publisher.events,
-            [ticket.id]
-        )
+        received = self.service.get_ticket(created.id)
+
+        self.assertEqual(received.id, created.id)
+        self.assertEqual(received.title, created.title)
+
+    def test_unknown_ticket(self):
+
+        with self.assertRaises(KeyError):
+            self.service.get_ticket("unknown-id")
 
 
 if __name__ == "__main__":

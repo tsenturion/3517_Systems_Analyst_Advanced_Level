@@ -1,9 +1,39 @@
-const API = "http://127.0.0.1:8000";
-
+const API = window.location.pathname.startsWith("/ui/")
+    ? window.location.origin
+    : "http://127.0.0.1:8000";
+    
 const ticketsContainer = document.querySelector("#tickets");
 const message = document.querySelector("#message");
 const filter = document.querySelector("#filter");
+const PAGE_SIZE = 20;
 
+let currentOffset = 0;
+let totalTickets = 0;
+let displayedStatus = filter.value;
+let activeTicketsRequest = null;
+
+const previousPage = document.querySelector("#previous-page");
+const nextPage = document.querySelector("#next-page");
+const pageInfo = document.querySelector("#page-info");
+
+
+function updatePagination() {
+    const currentPage =
+        Math.floor(currentOffset / PAGE_SIZE) + 1;
+
+    const totalPages = Math.max(
+        1,
+        Math.ceil(totalTickets / PAGE_SIZE)
+    );
+
+    pageInfo.textContent =
+        `Страница ${currentPage} из ${totalPages}`;
+
+    previousPage.disabled = currentOffset === 0;
+
+    nextPage.disabled =
+        currentOffset + PAGE_SIZE >= totalTickets;
+}
 const statuses = [
     "NEW",
     "IN_PROGRESS",
@@ -38,18 +68,52 @@ async function apiRequest(path, options = {}) {
     return data;
 }
 
-async function loadTickets() {
-    const params = new URLSearchParams({
-        limit: "20",
-        offset: "0"
-    });
-
-    if (filter.value) {
-        params.set("status", filter.value);
+async function loadTickets(offset = currentOffset) {
+    const status = filter.value;
+    if (status !== displayedStatus) {
+        offset = 0;
     }
 
-    const page = await apiRequest(`/tickets?${params}`);
+    const params = new URLSearchParams({
+        limit: String(PAGE_SIZE),
+        offset: String(offset)
+    });
 
+    if (status) {
+        params.set("status", status);
+    }
+
+    const request = apiRequest(`/tickets?${params}`);
+    activeTicketsRequest = request;
+
+    let page;
+    try {
+        page = await request;
+    } catch (error) {
+        if (activeTicketsRequest === request) {
+            activeTicketsRequest = null;
+            throw error;
+        }
+        return;
+    }
+
+    if (activeTicketsRequest !== request) {
+        return;
+    }
+    activeTicketsRequest = null;
+
+    const lastOffset = Math.max(
+        0,
+        Math.floor((page.total - 1) / PAGE_SIZE) * PAGE_SIZE
+    );
+    if (offset > lastOffset) {
+        return loadTickets(lastOffset);
+    }
+
+    currentOffset = offset;
+    totalTickets = page.total;
+    displayedStatus = status;
+    updatePagination();
     ticketsContainer.replaceChildren();
 
     if (page.items.length === 0) {
@@ -147,19 +211,24 @@ document.querySelector("#ticket-form")
         }
     });
 
-document.querySelector("#refresh")
-    .addEventListener("click", () => {
-        loadTickets().catch(error => {
-            showMessage(error.message, true);
-        });
-    });
-
-filter.addEventListener("change", () => {
-    loadTickets().catch(error => {
+function refreshTickets(offset) {
+    loadTickets(offset).catch(error => {
         showMessage(error.message, true);
     });
-});
+}
 
-loadTickets().catch(error => {
-    showMessage(error.message, true);
-});
+function changePage(offset) {
+    if (!activeTicketsRequest && offset >= 0 && offset < totalTickets) {
+        refreshTickets(offset);
+    }
+}
+
+document.querySelector("#refresh")
+    .addEventListener("click", () => refreshTickets());
+
+filter.addEventListener("change", () => refreshTickets(0));
+
+previousPage.addEventListener("click", () => changePage(currentOffset - PAGE_SIZE));
+nextPage.addEventListener("click", () => changePage(currentOffset + PAGE_SIZE));
+
+refreshTickets();
