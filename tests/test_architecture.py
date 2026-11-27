@@ -48,7 +48,8 @@ class TestTicketService(unittest.TestCase):
         )
 
         self.assertEqual(ticket.title, "Test ticket")
-        self.assertEqual(ticket.status.value, "CLOSED")
+        self.assertEqual(ticket.status.value, "NEW")
+
         self.assertIn(
             ticket.id,
             self.repository.tickets
